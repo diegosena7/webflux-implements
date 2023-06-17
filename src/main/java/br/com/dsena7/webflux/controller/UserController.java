@@ -1,7 +1,7 @@
 package br.com.dsena7.webflux.controller;
 
-import br.com.dsena7.webflux.dtos.UserRequestDto;
-import br.com.dsena7.webflux.dtos.UserResponseDto;
+import br.com.dsena7.webflux.model.UserRequestDto;
+import br.com.dsena7.webflux.model.UserResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

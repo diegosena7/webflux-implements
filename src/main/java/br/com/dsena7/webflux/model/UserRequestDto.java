@@ -1,4 +1,4 @@
-package br.com.dsena7.webflux.dtos;
+package br.com.dsena7.webflux.model;
 
 public record UserRequestDto(
         String name,
