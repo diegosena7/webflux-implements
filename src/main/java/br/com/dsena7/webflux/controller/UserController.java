@@ -3,6 +3,7 @@ package br.com.dsena7.webflux.controller;
 import br.com.dsena7.webflux.model.UserRequestDto;
 import br.com.dsena7.webflux.model.UserResponseDto;
 import br.com.dsena7.webflux.service.impl.UserServiceImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class UserController{
     private final UserServiceImpl userService;
 
     @PostMapping
-    public ResponseEntity<Mono<Void>> saveOneUser(@RequestBody UserRequestDto request) {
+    public ResponseEntity<Mono<Void>> saveOneUser(@RequestBody @Valid UserRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveUser(request).then());
     }
 
