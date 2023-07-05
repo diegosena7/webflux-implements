@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 
 import static java.time.LocalTime.now;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
 public class ControllerEceptionHandler {
@@ -40,6 +41,19 @@ public class ControllerEceptionHandler {
             error.addErrorsList(erros.getField(), erros.getDefaultMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(Mono.just(error));
+    }
+
+    @ExceptionHandler(ObjectNotFoundException.class)
+    public ResponseEntity<Mono<StandardError>> objectNotFound(ObjectNotFoundException exception, ServerHttpRequest request) {
+        return ResponseEntity.status(NOT_FOUND).body(Mono.just(
+                StandardError.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(NOT_FOUND.value())
+                        .error(NOT_FOUND.getReasonPhrase())
+                        .message(exception.getMessage())
+                        .path(request.getPath().toString())
+                        .build()
+        ));
     }
 
     private String verifyDuplicateKeys(String message){
