@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -20,5 +21,9 @@ public class UserRepository {
 
     public Mono<UserEntity> findOneUserById(String id) {
         return mongoTemplate.findById(id, UserEntity.class);
+    }
+
+    public Flux<UserEntity> findAllUsers() {
+        return mongoTemplate.findAll(UserEntity.class);
     }
 }

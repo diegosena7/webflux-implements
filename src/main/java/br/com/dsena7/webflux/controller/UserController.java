@@ -32,8 +32,8 @@ public class UserController{
 
     @GetMapping
     public ResponseEntity<Flux<UserResponseDto>> findAllUsers() {
-        // Implemente a lógica para buscar todos os usuários e retornar a resposta adequada
-        return null;
+        return ResponseEntity.ok().body(userService.findAllUsers()
+                .map(users -> mapper.toDto(users)));
     }
 
     @PutMapping("/{id}")
