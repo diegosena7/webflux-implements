@@ -1,5 +1,6 @@
 package br.com.dsena7.webflux.controller;
 
+import br.com.dsena7.webflux.mapper.UserMapper;
 import br.com.dsena7.webflux.model.UserRequestDto;
 import br.com.dsena7.webflux.model.UserResponseDto;
 import br.com.dsena7.webflux.service.impl.UserServiceImpl;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 public class UserController{
 
     private final UserServiceImpl userService;
+    private final UserMapper mapper;
 
     @PostMapping
     public ResponseEntity<Mono<Void>> saveOneUser(@RequestBody @Valid UserRequestDto request) {
@@ -24,9 +26,8 @@ public class UserController{
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Mono<UserResponseDto>> findOneUser(@PathVariable String id) {
-        // Implemente a lógica para buscar um usuário pelo ID e retornar a resposta adequada
-        return null;
+    public ResponseEntity<Mono<UserResponseDto>> findOneUserById(@PathVariable String id) {
+        return ResponseEntity.ok().body(userService.getOneUserById(id).map(object -> mapper.toDto(object)));
     }
 
     @GetMapping

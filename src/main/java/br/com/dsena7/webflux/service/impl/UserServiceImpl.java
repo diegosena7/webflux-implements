@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserService{
     private final UserMapper userMapper;
     @Override
     public Mono<UserEntity> getOneUserById(String id) {
-        return null;
+        return userRepository.findOneUserById(id);
     }
 
     @Override
