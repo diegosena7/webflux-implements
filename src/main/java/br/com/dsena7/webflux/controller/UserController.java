@@ -36,10 +36,9 @@ public class UserController{
                 .map(users -> mapper.toDto(users)));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Mono<UserResponseDto>> updateUser(@PathVariable String id, @RequestBody UserRequestDto userRequestDto) {
-        // Implemente a lógica para atualizar um usuário pelo ID e retornar a resposta adequada
-        return null;
+        return ResponseEntity.ok().body(userService.updateUser(userRequestDto, id).map(users -> mapper.toDto(users)));
     }
 
     @DeleteMapping("/{id}")
