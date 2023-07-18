@@ -4,7 +4,9 @@ import br.com.dsena7.webflux.validator.ValidateSpacesInRequestAttributes;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record UserRequestDto(
         @ValidateSpacesInRequestAttributes
         @NotBlank(message = "Name must not be nulor empty")
