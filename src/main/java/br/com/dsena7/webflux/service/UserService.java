@@ -11,4 +11,5 @@ public interface UserService {
     public Mono<UserEntity> saveUser(UserRequestDto userRequestDto);
     public Flux<UserEntity> findAllUsers();
     public Mono<UserEntity> updateUser(UserRequestDto userRequestDto, String id);
+    public Mono<UserEntity> deleteUser(String id);
 }

@@ -43,7 +43,6 @@ public class UserController{
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Mono<Void>> deleteOneUser(@PathVariable String id) {
-        // Implemente a lógica para excluir um usuário pelo ID e retornar a resposta adequada
-        return null;
+        return ResponseEntity.ok().body(userService.deleteUser(id).then());
     }
 }
