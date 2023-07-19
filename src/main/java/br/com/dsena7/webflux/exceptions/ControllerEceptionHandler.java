@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
-import static java.time.LocalTime.now;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
