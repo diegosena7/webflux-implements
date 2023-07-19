@@ -1,9 +1,11 @@
 package br.com.dsena7.webflux.service.impl;
 
 import br.com.dsena7.webflux.entity.UserEntity;
+import br.com.dsena7.webflux.exceptions.ObjectNotFoundException;
 import br.com.dsena7.webflux.mapper.UserMapper;
 import br.com.dsena7.webflux.model.UserRequestDto;
 import br.com.dsena7.webflux.repository.UserRepository;
+import com.mongodb.assertions.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +16,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static java.lang.String.format;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -121,5 +125,16 @@ class UserServiceImplTest {
         StepVerifier.create(entityMono).expectNextMatches(user -> user.getClass() == UserEntity.class
                 && user.getName().equals("Diego") && user.getId().equals("7")
         ).expectComplete().verify();
+    }
+
+    @Test
+    void testHandleNotFound(){
+        when(userRepository.findOneUserById(anyString())).thenReturn(Mono.empty());
+        try {
+            service.getOneUserById("123").block();
+        }catch (Exception e) {
+            assertEquals(ObjectNotFoundException.class, e.getClass());
+            assertEquals(format("Object not found, id: %s and type: %s", "123", UserEntity.class.getSimpleName()), e.getMessage());
+        }
     }
 }
