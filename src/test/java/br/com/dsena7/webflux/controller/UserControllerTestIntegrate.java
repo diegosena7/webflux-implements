@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static reactor.core.publisher.Mono.just;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -66,7 +67,7 @@ public class UserControllerTestIntegrate {
                 .password(PASSWORD)
                 .build();
 
-        when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(Mono.just(entity));
+        when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(just(entity));
 
         webTestClient.post().uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -91,7 +92,7 @@ public class UserControllerTestIntegrate {
                 .password(PASSWORD)
                 .build();
 
-        when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(Mono.just(entity));
+        when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(just(entity));
 
         webTestClient.post().uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,8 +111,6 @@ public class UserControllerTestIntegrate {
     @DisplayName("Test endpoint findById with successfully")
     void testGetByIdWithSuccess() {
 
-        final String id = "7";
-
         UserEntity entity = UserEntity.builder()
                 .id(ID)
                 .name(NOME)
@@ -125,10 +124,10 @@ public class UserControllerTestIntegrate {
                 .email(EMAIL)
                 .build();
 
-        when(service.getOneUserById(ArgumentMatchers.anyString())).thenReturn(Mono.just(entity));
+        when(service.getOneUserById(ArgumentMatchers.anyString())).thenReturn(just(entity));
         when(mapper.toDto(any(UserEntity.class))).thenReturn(response);
 
-        webTestClient.get().uri("/users/" + id).accept(MediaType.APPLICATION_JSON)
+        webTestClient.get().uri("/users/" + ID).accept(MediaType.APPLICATION_JSON)
                 .exchange().expectStatus().isOk().expectBody()
                 .jsonPath("$.id").isEqualTo(ID)
                 .jsonPath("$.name").isEqualTo(NOME)
@@ -204,7 +203,7 @@ public class UserControllerTestIntegrate {
                 .email(EMAIL)
                 .build();
 
-        when(service.updateUser(any(requestDto.getClass()), anyString())).thenReturn(Mono.just(entity));
+        when(service.updateUser(any(requestDto.getClass()), anyString())).thenReturn(just(entity));
         when(mapper.toDto(any(UserEntity.class))).thenReturn(response);
 
         webTestClient.patch().uri("/users/" + ID)
@@ -214,6 +213,41 @@ public class UserControllerTestIntegrate {
                 .jsonPath("$.id").isEqualTo(ID)
                 .jsonPath("$.name").isEqualTo(NOME)
                 .jsonPath("$.email").isEqualTo(EMAIL);
+    }
 
+    @Test
+    @DisplayName("Test endpoint deleteUser with successfully")
+    void testDeleteUser() {
+
+        UserEntity entity = UserEntity.builder()
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+
+        when(service.deleteUser(ID)).thenReturn(just(entity));
+
+        webTestClient.delete().uri("/users/" + ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange().expectStatus().isOk();
+    }
+
+    @Test
+    @DisplayName("Test endpoint deleteUser not found")
+    public void testDeleteUser_UserNotFound() {
+        String userId = "nonExistingUser";
+        when(service.deleteUser(userId)).thenReturn(Mono.error(new ObjectNotFoundException("User with ID 'nonExistingUser' not found.")));
+
+        webTestClient.delete()
+                .uri("/users/{id}", userId)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(HttpStatus.NOT_FOUND.value())
+                .jsonPath("$.error").isEqualTo(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .jsonPath("$.message").isEqualTo("User with ID 'nonExistingUser' not found.")
+                .jsonPath("$.timestamp").isNotEmpty()
+                .jsonPath("$.path").isEqualTo("/users/" + userId);
     }
 }
