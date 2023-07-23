@@ -20,14 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -46,23 +45,29 @@ public class UserControllerTestIntegrate {
     @MockBean
     private MongoClient client;
 
+    private final String NOME = "Diego";
+    private final String EMAIL = "diego.sena@gmail.com";
+    private final String ID = "7";
+    private final String PASSWORD = "password";
+
     @Test
     @DisplayName("Test endpoint save successfully")
     void testSaveWithSuccess() {
         UserRequestDto requestDto = UserRequestDto.builder()
-                .name("Diego")
-                .email("diego.sena@gmail.com")
-                .password("password")
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         UserEntity entity = UserEntity.builder()
-                .id("7")
-                .email("diego.sena@gmail.com")
-                .name("Diego")
-                .password("password")
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(Mono.just(entity));
+
         webTestClient.post().uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestDto)).exchange()
@@ -74,16 +79,16 @@ public class UserControllerTestIntegrate {
     @DisplayName("Test endpoint save with not successfully")
     void testSaveNotSuccess() {
         UserRequestDto requestDto = UserRequestDto.builder()
-                .name("Diego ")
-                .email("diego.sena@gmail.com")
-                .password("password")
+                .name(NOME.concat(" "))
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         UserEntity entity = UserEntity.builder()
-                .id("7")
-                .email("diego.sena@gmail.com")
-                .name("Diego")
-                .password("password")
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         when(service.saveUser(ArgumentMatchers.any(UserRequestDto.class))).thenReturn(Mono.just(entity));
@@ -103,21 +108,21 @@ public class UserControllerTestIntegrate {
 
     @Test
     @DisplayName("Test endpoint findById with successfully")
-    void testgetByIdWithSuccess() {
+    void testGetByIdWithSuccess() {
 
         final String id = "7";
 
         UserEntity entity = UserEntity.builder()
-                .id("7")
-                .email("diego.sena@gmail.com")
-                .name("Diego")
-                .password("password")
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         UserResponseDto response = UserResponseDto.builder()
-                .id("7")
-                .name("Diego")
-                .email("diego.sena@gmail.com")
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
                 .build();
 
         when(service.getOneUserById(ArgumentMatchers.anyString())).thenReturn(Mono.just(entity));
@@ -125,12 +130,13 @@ public class UserControllerTestIntegrate {
 
         webTestClient.get().uri("/users/" + id).accept(MediaType.APPLICATION_JSON)
                 .exchange().expectStatus().isOk().expectBody()
-                .jsonPath("$.id").isEqualTo(response.id())
-                .jsonPath("$.name").isEqualTo(response.name())
-                .jsonPath("$.email").isEqualTo(response.email());
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NOME)
+                .jsonPath("$.email").isEqualTo(EMAIL);
     }
 
     @Test
+    @DisplayName("Test endpoint findById not found")
     public void testFindOneUserById_UserNotFound() {
         String userId = "nonExistingUser";
         when(service.getOneUserById(userId)).thenReturn(Mono.error(new ObjectNotFoundException("User with ID 'nonExistingUser' not found.")));
@@ -145,5 +151,69 @@ public class UserControllerTestIntegrate {
                 .jsonPath("$.message").isEqualTo("User with ID 'nonExistingUser' not found.")
                 .jsonPath("$.timestamp").isNotEmpty()
                 .jsonPath("$.path").isEqualTo("/users/" + userId);
+    }
+
+
+    @Test
+    @DisplayName("Test endpoint findAllUsers with successfully")
+    void testGetAllUSersWithSuccess() {
+
+        UserEntity entity = UserEntity.builder()
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+
+        UserResponseDto response = UserResponseDto.builder()
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .build();
+
+        when(service.findAllUsers()).thenReturn(Flux.just(entity));
+        when(mapper.toDto(any(UserEntity.class))).thenReturn(response);
+
+        webTestClient.get().uri("/users").accept(MediaType.APPLICATION_JSON)
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.[0].id").isEqualTo(ID)
+                .jsonPath("$.[0].name").isEqualTo(NOME)
+                .jsonPath("$.[0].email").isEqualTo(EMAIL);
+    }
+
+    @Test
+    @DisplayName("Test endpoint updateUser with successfully")
+    void testUpdateUser() {
+
+        UserEntity entity = UserEntity.builder()
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+
+        UserRequestDto requestDto = UserRequestDto.builder()
+                .name(NOME)
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+
+        UserResponseDto response = UserResponseDto.builder()
+                .id(ID)
+                .name(NOME)
+                .email(EMAIL)
+                .build();
+
+        when(service.updateUser(any(requestDto.getClass()), anyString())).thenReturn(Mono.just(entity));
+        when(mapper.toDto(any(UserEntity.class))).thenReturn(response);
+
+        webTestClient.patch().uri("/users/" + ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(requestDto)).exchange()
+                .expectStatus().isOk().expectBody()
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NOME)
+                .jsonPath("$.email").isEqualTo(EMAIL);
+
     }
 }
